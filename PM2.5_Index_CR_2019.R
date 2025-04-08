@@ -1,9 +1,9 @@
 #######################################################################
-# We filter air quality in 4 main categories, following the criteria of
+# We filter PM2.5 in 4 main categories, following the criteria of
 # good quality 0<x<37 
 # fair quality 38<x<51
 # poor quality 59<x<91 
-# dangerous quality x>91 
+# dangerous quality x>91 , where x= [pm2.5]
 # Applying it to our all years dataset and by subgrouping them into El Nino and La Nina years
 
 pm25_CR19%>%
