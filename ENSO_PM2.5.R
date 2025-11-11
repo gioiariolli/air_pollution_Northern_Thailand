@@ -435,12 +435,33 @@ head(pm25_all_years)
 library(ggplot2)
 
 # Create the plot
-ggplot(pm25_all_years, aes(x = anno_mese_giorno, y = mean, color = ENSO)) +
-  geom_line(alpha = 0.8) + 
-  labs(title = "Daily PM2.5 Mean Values by Year and ENSO Classification",
-       x = "",
-       y = "PM2.5 mean values (ug/mL)",
-       color = "ENSO Classification") +
-  scale_color_manual(values = c("El Niño" = "red", "La Niña" = "blue")) +
+library(ggplot2)
+library(scales)
+library(lubridate)
+
+ggplot(pm25_all_years, aes(
+  x = anno_mese_giorno,
+  y = mean,
+  group = interaction(ENSO, year(anno_mese_giorno)),
+  color = ENSO
+)) +
+  geom_line(alpha = 0.8) +
+  labs(
+    title = "Daily PM2.5 Mean Values by Year and ENSO Classification",
+    x = "",
+    y = "PM2.5 mean values (µg/m³)",
+    color = "ENSO Classification"
+  ) +
+  scale_color_manual(
+    values = c("El Niño" = "darkgray", "La Niña" = "darkgray"),
+    labels = c("El Niño (rosso)", "La Niña (blu)")
+  ) +
+  scale_x_date(
+    date_labels = "%B",        # mesi completi (in italiano, se locale impostata)
+    date_breaks = "3 months"   # un’etichetta ogni tre mesi
+  ) +
   theme_minimal() +
-  theme(legend.position = "top")
+  theme(
+    legend.position = "top",
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1) # etichette verticali leggibili
+  )
