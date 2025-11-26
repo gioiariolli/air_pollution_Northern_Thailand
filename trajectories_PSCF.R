@@ -54,6 +54,17 @@ all_lat <- c(traj_pointsNSH20$lat, traj_pointsSH20$lat,
 xlim_global <- range(all_lon, na.rm = TRUE)
 ylim_global <- range(all_lat, na.rm = TRUE)
 
+# ------------------ trajectories plotting function ------------------
+plot_traj <- function(traj_data, title_name) {
+  trajPlot(
+    traj_data,
+    xlim = xlim_global,
+    ylim = ylim_global,
+    asp = 1,
+    main = title_name
+  )
+}
+
 # Plotting trajectories
 plot_traj(traj_pointsNSH20, "Trajectories NSH20")
 plot_traj(traj_pointsSH20,  "Trajectories SH20")
@@ -65,6 +76,20 @@ plot_traj(traj_pointsSH21,  "Trajectories SH21")
 xlim_pscf <- c(85, 105)
 ylim_pscf <- c(10, 22)
 
+# ------------------ PSCF plotting function------------------
+plot_pscf <- function(traj_data, pollutant_col, title_name) {
+  trajLevel(
+    traj_data,
+    pollutant = pollutant_col,   # colonna numerica con concentrazione
+    statistic = "pscf",
+    col = "increment",
+    border = NA,
+    xlim = xlim_pscf,
+    ylim = ylim_pscf,
+    asp = 1,
+    main = title_name
+  )
+}
 # Plotting PSCF fucntion using OpenAir library
 
 traj_pointsNSH20 |> 
@@ -119,7 +144,6 @@ traj_pointsSH21 |>
 
 # Do cluster analysis with defined number of clusters
 clustNSH20 <- trajCluster(traj_pointsNSH20, n.cluster=5, main = "Non-Smoke Haze 2020")
-plot(clust)
 clustSH20 <- trajCluster(traj_pointsSH20, n.cluster=5, main = "Smoke Haze 2020")
 clustNSH21 <- trajCluster(traj_pointsNSH21, n.cluster=5, main = "Non-Smoke Haze 2021")
 clustSH21 <- trajCluster(traj_pointsSH21, n.cluster=5, main = "Smoke Haze 2021")
