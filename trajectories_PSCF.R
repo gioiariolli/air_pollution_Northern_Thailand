@@ -6,7 +6,7 @@ library(sf)
 library(dplyr)
 library(openair)
 
-# Preparazione dei data set e shapefile
+#--------------- Data set and shapefile preparation
 prepare_traj <- function(shapefile_path) {
   traj_sf <- st_read(shapefile_path)
   
@@ -16,33 +16,36 @@ prepare_traj <- function(shapefile_path) {
   # LINESTRING in POINT
   traj_points <- traj_sf %>% st_cast("POINT")
   
-  # Estrazione coordinate
+  # Coordinates extraction
   coords <- st_coordinates(traj_points)
   traj_points$lon <- as.numeric(coords[, "X"])
   traj_points$lat <- as.numeric(coords[, "Y"])
   
-  # Rimuovere geometria per openair
+  # Removing geometry for OpenAir
   traj_points <- traj_points %>% st_drop_geometry()
   
-  # Calcolare hour.inc per ogni traiettoria
+  # Calculation of "hour.inc" for each trajectory
   traj_points <- traj_points %>%
     group_by(traj_id) %>%
     mutate(hour.inc = row_number() - 1) %>%
     ungroup()
   
-  # Convertire date
+  # Date conversion
   traj_points$date <- as.POSIXct(strptime(traj_points$date, format="%Y%m%d"))
   
   return(traj_points)
 }
 
-# ------------------ Caricamento di tutti i datasets
+# ------------------ Datasets import in R
+# NSH stands for Non-smoke haze
+# SH stands for Smoke-haze
 traj_pointsNSH20 <- prepare_traj("NSH_2020.shp")
 traj_pointsSH20  <- prepare_traj("SH_2020.shp")
 traj_pointsNSH21 <- prepare_traj("NSH_2021.shp")
 traj_pointsSH21  <- prepare_traj("SH_2021.shp")
 
-# ------------------ Setting di limiti globali per evitare frame diversi
+#-------------------------- BACK TRAJECTORIES
+# Setting different global limits for trajectories only
 all_lon <- c(traj_pointsNSH20$lon, traj_pointsSH20$lon,
              traj_pointsNSH21$lon, traj_pointsSH21$lon)
 all_lat <- c(traj_pointsNSH20$lat, traj_pointsSH20$lat,
@@ -51,41 +54,18 @@ all_lat <- c(traj_pointsNSH20$lat, traj_pointsSH20$lat,
 xlim_global <- range(all_lon, na.rm = TRUE)
 ylim_global <- range(all_lat, na.rm = TRUE)
 
-# ------------------ plotting delle traiettorie con open air library
-plot_traj <- function(traj_data, title_name) {
-  trajPlot(
-    traj_data,
-    xlim = xlim_global,
-    ylim = ylim_global,
-    asp = 1,
-    main = title_name
-  )
-}
-
-# ------------------ PSCF
-plot_pscf <- function(traj_data, pollutant_col, title_name) {
-  trajLevel(
-    traj_data,
-    pollutant = pollutant_col,   # colonna numerica con concentrazione
-    statistic = "pscf",
-    col = "increment",
-    border = NA,
-    xlim = xlim_global,
-    ylim = ylim_global,
-    asp = 1,
-    main = title_name
-  )
-}
-
-# Traiettorie plottate
+# Plotting trajectories
 plot_traj(traj_pointsNSH20, "Trajectories NSH20")
 plot_traj(traj_pointsSH20,  "Trajectories SH20")
 plot_traj(traj_pointsNSH21, "Trajectories NSH21")
 plot_traj(traj_pointsSH21,  "Trajectories SH21")
 
-# Limiti ristretti solo per PSCF
+#-----------------------------PSCF
+# Setting geocoordinates limits to frame plots
 xlim_pscf <- c(85, 105)
 ylim_pscf <- c(10, 22)
+
+# Plotting PSCF fucntion using OpenAir library
 
 traj_pointsNSH20 |> 
   trajLevel(
@@ -134,3 +114,12 @@ traj_pointsSH21 |>
     asp = 1,
     main = "Smoke Haze 2021 - PSCF"
   )
+
+#--------------------Cluster analysis
+
+# Do cluster analysis with defined number of clusters
+clustNSH20 <- trajCluster(traj_pointsNSH20, n.cluster=5, main = "Non-Smoke Haze 2020")
+plot(clust)
+clustSH20 <- trajCluster(traj_pointsSH20, n.cluster=5, main = "Smoke Haze 2020")
+clustNSH21 <- trajCluster(traj_pointsNSH21, n.cluster=5, main = "Non-Smoke Haze 2021")
+clustSH21 <- trajCluster(traj_pointsSH21, n.cluster=5, main = "Smoke Haze 2021")
